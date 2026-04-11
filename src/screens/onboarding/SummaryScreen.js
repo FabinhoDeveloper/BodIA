@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Alert, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, StyleSheet, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import ScreenHeader from '../../components/ScreenHeader';
 import NavigationFooter from '../../components/NavigationFooter';
@@ -21,6 +22,14 @@ const DIET_LABELS = {
   strict: 'Dieta restritiva',
   flexible: 'Flexível',
 };
+const DIETARY_RESTRICTION_LABELS = {
+  lactose_intolerant: 'Intolerância à lactose',
+  gluten_free: 'Alergia a glúten',
+  vegan: 'Vegano',
+  vegetarian: 'Vegetariano',
+  seafood_allergy: 'Alergia a frutos do mar',
+  peanut_allergy: 'Alergia a amendoim',
+};
 const SPLIT_LABELS = {
   2: 'Full Body',
   3: 'Push/Pull/Legs',
@@ -28,6 +37,25 @@ const SPLIT_LABELS = {
   5: 'ABCDE',
   6: 'PPL x2',
 };
+const PHYSICAL_RESTRICTION_LABELS = {
+  herniated_disc: 'Hérnia de disco',
+  knee_injury: 'Lesão no joelho',
+  shoulder_injury: 'Lesão no ombro',
+  lower_back_pain: 'Dor lombar',
+  tendinitis: 'Tendinite',
+  wrist_injury: 'Lesão no punho',
+};
+
+function formatSelection(values, labels, otherValue, emptyLabel) {
+  const baseValues = values.filter((value) => value !== 'none' && value !== 'other');
+  const formatted = baseValues.map((value) => labels[value] || value);
+
+  if (otherValue && otherValue.trim()) {
+    formatted.push(otherValue.trim());
+  }
+
+  return formatted.length > 0 ? formatted.join(', ') : emptyLabel;
+}
 
 function SummaryRow({ label, value }) {
   return (
@@ -90,17 +118,31 @@ export default function SummaryScreen({ navigation }) {
             <SummaryRow label="Experiência" value={EXPERIENCE_LABELS[d.experienceLevel]} />
             <SummaryRow label="Dias/semana" value={d.trainingDaysPerWeek ? `${d.trainingDaysPerWeek} dias` : null} />
             <SummaryRow label="Divisão sugerida" value={SPLIT_LABELS[d.trainingDaysPerWeek]} />
+            <SummaryRow
+              label="Restrições físicas"
+              value={formatSelection(
+                d.physicalRestrictions,
+                PHYSICAL_RESTRICTION_LABELS,
+                d.physicalRestrictionsOther,
+                'Nenhuma'
+              )}
+            />
           </SummarySection>
 
           <SummarySection title="Alimentação" onEdit={() => navigation.navigate('DietStyle')}>
             <SummaryRow label="Estilo de dieta" value={DIET_LABELS[d.dietStyle]} />
             <SummaryRow
               label="Restrições"
-              value={d.dietaryRestrictions.length > 0 ? d.dietaryRestrictions.join(', ') : 'Nenhuma'}
+              value={formatSelection(
+                d.dietaryRestrictions,
+                DIETARY_RESTRICTION_LABELS,
+                d.dietaryRestrictionsOther,
+                'Nenhuma'
+              )}
             />
             <SummaryRow
               label="Excluídos"
-              value={d.excludedFoods.length > 0 ? d.excludedFoods.join(', ') : 'Nenhum'}
+              value={formatSelection(d.excludedFoods, {}, d.excludedFoodsOther, 'Nenhum')}
             />
           </SummarySection>
         </ScrollView>

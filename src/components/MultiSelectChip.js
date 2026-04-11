@@ -23,11 +23,14 @@ const styles = StyleSheet.create({
   chip: {
     paddingVertical: 8,
     paddingHorizontal: 16,
+    width: '100%',
     borderRadius: 20,
     borderWidth: 1,
     borderColor: colors.neutral.border,
     backgroundColor: colors.neutral.surface,
-    margin: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
   },
   chipSelected: {
     backgroundColor: colors.primary[50],

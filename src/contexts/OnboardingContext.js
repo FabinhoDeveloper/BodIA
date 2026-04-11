@@ -27,15 +27,18 @@ const initialState = {
 
   // Tela 7 - Restrições físicas
   physicalRestrictions: [],
+  physicalRestrictionsOther: '',
 
   // Tela 8 - Estilo de dieta
   dietStyle: null,
 
   // Tela 9 - Restrições alimentares
   dietaryRestrictions: [],
+  dietaryRestrictionsOther: '',
 
   // Tela 10 - Alimentos excluídos
   excludedFoods: [],
+  excludedFoodsOther: '',
 
   // Tela 11 - Aviso legal
   legalAccepted: false,

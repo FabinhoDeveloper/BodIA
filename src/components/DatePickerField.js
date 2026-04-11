@@ -25,7 +25,7 @@ export default function DatePickerField({ label, value, onChange, error }) {
   }
 
   const maxDate = new Date();
-  maxDate.setFullYear(maxDate.getFullYear() - 14);
+  maxDate.setFullYear(maxDate.getFullYear());
   const minDate = new Date();
   minDate.setFullYear(minDate.getFullYear() - 80);
 

@@ -1,19 +1,12 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import ScreenHeader from '../../components/ScreenHeader';
 import NavigationFooter from '../../components/NavigationFooter';
 import { colors } from '../../theme/colors';
 
 const DAYS = [2, 3, 4, 5, 6];
-
-const DESCRIPTIONS = {
-  2: 'Full Body — treino completo a cada sessão',
-  3: 'Push/Pull/Legs — uma divisão clássica',
-  4: 'Upper/Lower — alternando superior e inferior',
-  5: 'ABCDE — um grupo muscular por dia',
-  6: 'Push/Pull/Legs x2 — volume máximo',
-};
 
 export default function TrainingDaysScreen({ navigation }) {
   const { onboardingData, updateOnboarding } = useOnboarding();
@@ -41,9 +34,6 @@ export default function TrainingDaysScreen({ navigation }) {
               </TouchableOpacity>
             ))}
           </View>
-          {selected ? (
-            <Text style={styles.description}>{DESCRIPTIONS[selected]}</Text>
-          ) : null}
         </ScrollView>
         <NavigationFooter
           currentStep={6}
