@@ -1,21 +1,22 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import ProgressDots from './ProgressDots';
 import { colors } from '../theme/colors';
 
 export default function SummaryFooter({
-  currentStep,
-  totalSteps,
-  onNext,
   onBack,
+  onNext,
   nextLabel,
   nextDisabled,
-  showBack = true,
 }) {
   return (
     <View style={styles.container}>
-      <ProgressDots current={currentStep} total={totalSteps} />
+      <View style={styles.progressTrack}>
+        <View style={styles.progressFill} />
+      </View>
       <View style={styles.buttons}>
+        <TouchableOpacity style={styles.backBtn} onPress={onBack} activeOpacity={0.7}>
+          <Text style={styles.backText}>Voltar</Text>
+        </TouchableOpacity>
         <TouchableOpacity
           style={[styles.nextBtn, nextDisabled && styles.nextDisabled]}
           onPress={onNext}
@@ -44,6 +45,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  progressTrack: {
+    width: 88,
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: colors.neutral.border,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 999,
+    backgroundColor: colors.primary[500],
   },
   backBtn: {
     height: 40,

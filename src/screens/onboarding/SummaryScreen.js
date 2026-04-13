@@ -5,6 +5,7 @@ import { useOnboarding } from '../../contexts/OnboardingContext';
 import ScreenHeader from '../../components/ScreenHeader';
 import SummaryFooter from '../../components/SummaryFooter';
 import { colors } from '../../theme/colors';
+import { buildPlanPayload } from '../../services/api';
 
 const GOAL_LABELS = { muscle_gain: 'Ganhar massa', maintenance: 'Manter peso', fat_loss: 'Perder gordura' };
 const SEX_LABELS = { M: 'Masculino', F: 'Feminino' };
@@ -84,7 +85,9 @@ export default function SummaryScreen({ navigation }) {
   const { onboardingData } = useOnboarding();
   const d = onboardingData;
 
-  function handleGenerate() {
+  function handleGenerate() { // Posteriormente, conectar ao endpoint real da aplicação.
+    const payload = buildPlanPayload(onboardingData);
+    console.log('generatePlan payload ->', JSON.stringify(payload, null, 2));
     Alert.alert('Sucesso!', 'Seu plano foi gerado com sucesso!');
   }
 
@@ -151,7 +154,7 @@ export default function SummaryScreen({ navigation }) {
           totalSteps={12}
           onNext={handleGenerate}
           onBack={() => navigation.goBack()}
-          nextLabel="Gerar meu plano"
+          nextLabel="Gerar plano"
         />
       </View>
     </SafeAreaView>

@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import ProgressDots from './ProgressDots';
 import { colors } from '../theme/colors';
 
 export default function NavigationFooter({
@@ -12,9 +11,13 @@ export default function NavigationFooter({
   nextDisabled,
   showBack = true,
 }) {
+  const progress = totalSteps > 0 ? `${Math.min((currentStep / totalSteps) * 100, 100)}%` : '0%';
+
   return (
     <View style={styles.container}>
-      <ProgressDots current={currentStep} total={totalSteps} />
+      <View style={styles.progressTrack}>
+        <View style={[styles.progressFill, { width: progress }]} />
+      </View>
       <View style={styles.buttons}>
         {showBack && (
           <TouchableOpacity style={styles.backBtn} onPress={onBack} activeOpacity={0.7}>
@@ -49,6 +52,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  progressTrack: {
+    width: 88,
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: colors.neutral.border,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 999,
+    backgroundColor: colors.primary[500],
   },
   backBtn: {
     height: 40,

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import ScreenHeader from '../../components/ScreenHeader';
@@ -39,7 +40,14 @@ export default function LegalDisclaimerScreen({ navigation }) {
             activeOpacity={0.7}
           >
             <View style={[styles.checkbox, accepted && styles.checkboxActive]}>
-              {accepted && <Text style={styles.checkMark}>✓</Text>}
+              {accepted && (
+                <Ionicons
+                  name="checkmark"
+                  size={14}
+                  color={colors.neutral.white}
+                  style={styles.checkIcon}
+                />
+              )}
             </View>
             <Text style={styles.checkLabel}>Li e aceito os termos de uso</Text>
           </TouchableOpacity>
@@ -87,6 +95,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: colors.neutral.border,
     marginRight: 12,
+    display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -94,10 +103,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary[500],
     borderColor: colors.primary[500],
   },
-  checkMark: {
-    color: colors.neutral.white,
-    fontSize: 14,
-    fontWeight: '700',
+  checkIcon: {
+    alignSelf: 'center',
   },
   checkLabel: {
     fontSize: 14,
