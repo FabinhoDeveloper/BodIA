@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Alert, StyleSheet, ScrollView } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import ScreenHeader from '../../components/ScreenHeader';
-import NavigationFooter from '../../components/NavigationFooter';
+import SummaryFooter from '../../components/SummaryFooter';
 import { colors } from '../../theme/colors';
 
 const GOAL_LABELS = { muscle_gain: 'Ganhar massa', maintenance: 'Manter peso', fat_loss: 'Perder gordura' };
@@ -146,7 +146,7 @@ export default function SummaryScreen({ navigation }) {
             />
           </SummarySection>
         </ScrollView>
-        <NavigationFooter
+        <SummaryFooter
           currentStep={12}
           totalSteps={12}
           onNext={handleGenerate}
