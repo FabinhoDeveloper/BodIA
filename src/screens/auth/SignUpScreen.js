@@ -1,39 +1,29 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ScreenHeader from '../../components/ScreenHeader';
 import TextInputField from '../../components/TextInputField';
 import PrimaryButton from '../../components/PrimaryButton';
 import { colors } from '../../theme/colors';
-import { isValidEmail, isValidPassword, isValidName, isValidDate } from '../../utils/validators';
 
 export default function SignUpScreen({ navigation }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [birthDate, setBirthDate] = useState('');
   const [errors, setErrors] = useState({});
-
-  function formatDate(text) {
-    const digits = text.replace(/\D/g, '');
-    if (digits.length <= 2) return digits;
-    if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
-    return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
-  }
 
   function validate() {
     const e = {};
-    if (!isValidName(name)) e.name = 'Informe seu nome';
-    if (!isValidEmail(email)) e.email = 'E-mail inválido';
-    if (!isValidPassword(password)) e.password = 'Senha deve ter no mínimo 8 caracteres';
-    if (!isValidDate(birthDate)) e.birthDate = 'Data inválida (DD/MM/AAAA)';
+    if (!name.trim()) e.name = 'Informe seu nome';
+    if (!email.includes('@') || !email.includes('.')) e.email = 'E-mail inválido';
+    if (password.length < 8) e.password = 'Senha deve ter no mínimo 8 caracteres';
     setErrors(e);
     return Object.keys(e).length === 0;
   }
 
   function handleSignUp() {
     if (validate()) {
-      Alert.alert('Conta criada!', 'Sua conta foi criada com sucesso.');
+      navigation.navigate('PlanLoading');
     }
   }
 
@@ -46,12 +36,19 @@ export default function SignUpScreen({ navigation }) {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.container}>
-            <ScreenHeader title="Criar sua conta" subtitle="Pra salvar seu plano personalizado" />
+            <View style={styles.logoWrap}>
+              <Text style={styles.logo}>
+                <Text style={styles.logoBod}>Bod</Text>
+                <Text style={styles.logoIA}>IA</Text>
+              </Text>
+            </View>
+            <ScreenHeader title="Criar sua conta" subtitle="Seu plano está quase pronto" />
             <TextInputField
               label="Nome completo"
               placeholder="Seu nome"
               value={name}
               onChangeText={setName}
+              autoCapitalize="words"
               error={errors.name}
             />
             <TextInputField
@@ -72,14 +69,6 @@ export default function SignUpScreen({ navigation }) {
               autoCapitalize="none"
               error={errors.password}
             />
-            <TextInputField
-              label="Data de nascimento"
-              placeholder="DD/MM/AAAA"
-              value={birthDate}
-              onChangeText={(t) => setBirthDate(formatDate(t))}
-              keyboardType="numeric"
-              error={errors.birthDate}
-            />
             <PrimaryButton title="Criar conta" onPress={handleSignUp} />
             <TouchableOpacity
               style={styles.loginLink}
@@ -98,7 +87,11 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.neutral.white },
   flex: { flex: 1 },
   scroll: { flexGrow: 1 },
-  container: { flex: 1, paddingHorizontal: 24, paddingTop: 56, paddingBottom: 32 },
+  container: { flex: 1, paddingHorizontal: 24, paddingTop: 24, paddingBottom: 32 },
+  logoWrap: { alignItems: 'center', marginBottom: 8 },
+  logo: { fontSize: 32, fontWeight: '700' },
+  logoBod: { color: colors.neutral.primary },
+  logoIA: { color: colors.primary[500] },
   loginLink: { alignItems: 'center', marginTop: 20 },
   loginText: { fontSize: 14, color: colors.neutral.muted },
   loginHighlight: { color: colors.primary[500], fontWeight: '600' },

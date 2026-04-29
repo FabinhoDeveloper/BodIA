@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Alert, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import ScreenHeader from '../../components/ScreenHeader';
@@ -88,7 +88,7 @@ export default function SummaryScreen({ navigation }) {
   function handleGenerate() { // Posteriormente, conectar ao endpoint real da aplicação.
     const payload = buildPlanPayload(onboardingData);
     console.log('generatePlan payload ->', JSON.stringify(payload, null, 2));
-    Alert.alert('Sucesso!', 'Seu plano foi gerado com sucesso!');
+    navigation.getParent()?.navigate('Auth', { screen: 'SignUp' });
   }
 
   return (

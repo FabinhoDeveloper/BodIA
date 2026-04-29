@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ScreenHeader from '../../components/ScreenHeader';
 import TextInputField from '../../components/TextInputField';
@@ -11,7 +11,7 @@ export default function LoginScreen({ navigation }) {
   const [password, setPassword] = useState('');
 
   function handleLogin() {
-    Alert.alert('Login', 'Login realizado com sucesso!');
+    navigation.getParent()?.reset({ index: 0, routes: [{ name: 'Main' }] });
   }
 
   return (
