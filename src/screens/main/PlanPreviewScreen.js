@@ -6,6 +6,16 @@ import PrimaryButton from '../../components/PrimaryButton';
 import SecondaryButton from '../../components/SecondaryButton';
 import { colors } from '../../theme/colors';
 
+const DIA_SEMANA_LABELS = {
+  SEGUNDA: 'Segunda-feira',
+  TERCA: 'Terça-feira',
+  QUARTA: 'Quarta-feira',
+  QUINTA: 'Quinta-feira',
+  SEXTA: 'Sexta-feira',
+  SABADO: 'Sábado',
+  DOMINGO: 'Domingo',
+};
+
 const MOCK_PLAN = {
   calories: 2400,
   protein: 150,
@@ -58,12 +68,58 @@ const MOCK_PLAN = {
   },
 };
 
+function buildPlanFromServer(serverData) {
+  const { fichaDeTreino, planoAlimentar } = serverData;
+
+  const trainingDays = fichaDeTreino.planosTreinamentoDiario.map((dia) => ({
+    name: DIA_SEMANA_LABELS[dia.diaSemana] || dia.diaSemana,
+    exercises: dia.exercicios.map((ex) => ({
+      name: ex.nome,
+      sets: ex.series,
+      reps: String(ex.repeticoes),
+      rest: `${ex.tempoDescanso}s`,
+    })),
+  }));
+
+  const meals = planoAlimentar.refeicoes.map((ref) => {
+    const totalMealCalories = ref.alimentos.reduce(
+      (sum, a) => sum + (a.calorias || 0),
+      0
+    );
+    return {
+      name: ref.nome,
+      calories: Math.round(totalMealCalories),
+      foods: ref.alimentos.map((a) => {
+        const parts = [a.nome];
+        if (a.quantidade) {
+          parts.push(`${a.quantidade}${a.unidade || 'g'}`);
+        }
+        return parts.join(' · ');
+      }),
+    };
+  });
+
+  return {
+    calories: planoAlimentar.metaCalorica,
+    protein: planoAlimentar.macros.proteinas,
+    carbs: planoAlimentar.macros.carboidratos,
+    fat: planoAlimentar.macros.gorduras,
+    water: planoAlimentar.hidratacaoMl,
+    meals,
+    training: {
+      split: fichaDeTreino.divisao,
+      daysPerWeek: fichaDeTreino.planosTreinamentoDiario.length,
+      days: trainingDays,
+    },
+  };
+}
+
 function formatCalories(value) {
   return value.toLocaleString('pt-BR');
 }
 
-function TrainingTab() {
-  const { training } = MOCK_PLAN;
+function TrainingTab({ plan }) {
+  const { training } = plan;
   return (
     <View>
       <View style={styles.summaryCard}>
@@ -88,20 +144,25 @@ function TrainingTab() {
   );
 }
 
-function DietTab() {
+function DietTab({ plan }) {
   return (
     <View>
       <View style={styles.totalsCard}>
-        <Text style={styles.totalsCalories}>{`${formatCalories(MOCK_PLAN.calories)} kcal / dia`}</Text>
+        <Text style={styles.totalsCalories}>{`${formatCalories(plan.calories)} kcal / dia`}</Text>
         <Text style={styles.totalsMacros}>
-          {`Proteína: ${MOCK_PLAN.protein}g · Carboidrato: ${MOCK_PLAN.carbs}g · Gordura: ${MOCK_PLAN.fat}g`}
+          {`Proteína: ${plan.protein}g · Carboidrato: ${plan.carbs}g · Gordura: ${plan.fat}g`}
         </Text>
+        {plan.water ? (
+          <Text style={styles.waterLabel}>
+            {`Água: ${plan.water}ml / dia`}
+          </Text>
+        ) : null}
       </View>
-      {MOCK_PLAN.meals.map((meal) => (
+      {plan.meals.map((meal) => (
         <View key={meal.name} style={styles.whiteCard}>
           <View style={styles.mealHeader}>
             <Text style={styles.mealName}>{meal.name}</Text>
-            <Text style={styles.mealMeta}>{`${meal.time} · ${meal.calories} kcal`}</Text>
+            <Text style={styles.mealMeta}>{`${meal.calories} kcal`}</Text>
           </View>
           {meal.foods.map((food) => (
             <Text key={food} style={styles.foodItem}>{`• ${food}`}</Text>
@@ -112,8 +173,11 @@ function DietTab() {
   );
 }
 
-export default function PlanPreviewScreen({ navigation }) {
+export default function PlanPreviewScreen({ route, navigation }) {
+  const serverData = route.params?.serverData || null;
   const [activeTab, setActiveTab] = useState(0);
+
+  const plan = serverData ? buildPlanFromServer(serverData) : MOCK_PLAN;
 
   function handleStart() {
     navigation.getParent()?.reset({ index: 0, routes: [{ name: 'Main' }] });
@@ -126,7 +190,7 @@ export default function PlanPreviewScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Seu plano está pronto! 🎉</Text>
+        <Text style={styles.headerTitle}>Seu plano está pronto!</Text>
         <Text style={styles.headerSubtitle}>Gerado pela IA do BodIA</Text>
       </View>
       <View style={styles.tabsWrap}>
@@ -141,7 +205,7 @@ export default function PlanPreviewScreen({ navigation }) {
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        {activeTab === 0 ? <TrainingTab /> : <DietTab />}
+        {activeTab === 0 ? <TrainingTab plan={plan} /> : <DietTab plan={plan} />}
       </ScrollView>
       <View style={styles.footer}>
         <PrimaryButton title="Começar a usar o app" onPress={handleStart} />
@@ -245,6 +309,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.neutral.secondary,
     marginTop: 4,
+  },
+  waterLabel: {
+    fontSize: 13,
+    color: colors.neutral.secondary,
+    marginTop: 2,
   },
   mealHeader: {
     flexDirection: 'row',

@@ -11,7 +11,8 @@ const MESSAGES = [
   'Finalizando seu plano ✓',
 ];
 
-export default function PlanLoadingScreen({ navigation }) {
+export default function PlanLoadingScreen({ route, navigation }) {
+  const serverData = route.params?.serverData || null;
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -20,12 +21,15 @@ export default function PlanLoadingScreen({ navigation }) {
       timers.push(setTimeout(() => setIndex(i), i * 1000));
     }
     timers.push(
-      setTimeout(() => navigation.replace('PlanPreview'), MESSAGES.length * 1000)
+      setTimeout(
+        () => navigation.replace('PlanPreview', { serverData }),
+        MESSAGES.length * 1000
+      )
     );
     return () => {
       timers.forEach(clearTimeout);
     };
-  }, [navigation]);
+  }, [navigation, serverData]);
 
   return (
     <SafeAreaView style={styles.safe}>
