@@ -5,7 +5,7 @@ import { useOnboarding } from '../../contexts/OnboardingContext';
 import ScreenHeader from '../../components/ScreenHeader';
 import SummaryFooter from '../../components/SummaryFooter';
 import { colors } from '../../theme/colors';
-import { buildPlanPayload } from '../../services/api';
+
 
 const GOAL_LABELS = { muscle_gain: 'Ganhar massa', maintenance: 'Manter peso', fat_loss: 'Perder gordura' };
 const SEX_LABELS = { M: 'Masculino', F: 'Feminino' };
@@ -85,10 +85,11 @@ export default function SummaryScreen({ navigation }) {
   const { onboardingData } = useOnboarding();
   const d = onboardingData;
 
-  function handleGenerate() { // Posteriormente, conectar ao endpoint real da aplicação.
-    const payload = buildPlanPayload(onboardingData);
-    console.log('generatePlan payload ->', JSON.stringify(payload, null, 2));
-    navigation.getParent()?.navigate('Auth', { screen: 'SignUp' });
+  function handleGenerate() {
+    navigation.getParent()?.navigate('Auth', {
+      screen: 'SignUp',
+      params: { onboardingData },
+    });
   }
 
   return (

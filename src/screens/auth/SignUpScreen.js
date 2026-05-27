@@ -1,16 +1,26 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ScreenHeader from '../../components/ScreenHeader';
 import TextInputField from '../../components/TextInputField';
 import PrimaryButton from '../../components/PrimaryButton';
 import { colors } from '../../theme/colors';
+import { buildUserPayload, createUser } from '../../services/api';
 
-export default function SignUpScreen({ navigation }) {
+export default function SignUpScreen({ route, navigation }) {
+  const onboardingData = route.params?.onboardingData || {};
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (onboardingData.name) {
+      setName(onboardingData.name);
+    }
+  }, [onboardingData.name]);
 
   function validate() {
     const e = {};
@@ -21,9 +31,41 @@ export default function SignUpScreen({ navigation }) {
     return Object.keys(e).length === 0;
   }
 
-  function handleSignUp() {
-    if (validate()) {
-      navigation.navigate('PlanLoading');
+  async function handleSignUp() {
+    if (!validate()) return;
+
+    setLoading(true);
+    try {
+      const payload = buildUserPayload(onboardingData, email.trim(), password);
+      payload.nome = name.trim();
+
+      console.log('[BodIA] Enviando para /user:', JSON.stringify(payload, null, 2));
+
+      const response = await createUser(payload);
+
+      console.log('[BodIA] Resposta do servidor:', JSON.stringify(response, null, 2));
+
+      navigation.navigate('PlanLoading', {
+        serverData: response.data,
+      });
+    } catch (error) {
+      console.log('[BodIA] Erro:', error.message);
+
+      let message;
+      if (error.response?.data?.error) {
+        message = error.response.data.error;
+      } else if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
+        message = 'Sem conexão com o servidor. Verifique sua internet.';
+      } else if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        message = 'O servidor demorou para responder. Tente novamente.';
+      } else {
+        message = 'Erro ao criar conta. Tente novamente.';
+      }
+
+      console.log('[BodIA] Mensagem exibida:', message);
+      Alert.alert('Erro', message);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -69,7 +111,11 @@ export default function SignUpScreen({ navigation }) {
               autoCapitalize="none"
               error={errors.password}
             />
-            <PrimaryButton title="Criar conta" onPress={handleSignUp} />
+            <PrimaryButton
+              title={loading ? 'Criando conta...' : 'Criar conta'}
+              onPress={handleSignUp}
+              disabled={loading}
+            />
             <TouchableOpacity
               style={styles.loginLink}
               onPress={() => navigation.navigate('Login')}
