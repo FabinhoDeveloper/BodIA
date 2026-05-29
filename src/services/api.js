@@ -1,6 +1,16 @@
 import axios from 'axios';
 
-const API_URL = 'http://192.168.2.122:8080';
+const API_URL = 'http://192.168.0.190:8080';
+
+let authToken = null;
+
+export function setAuthToken(token) {
+  authToken = token;
+}
+
+export function clearAuthToken() {
+  authToken = null;
+}
 
 const api = axios.create({
   baseURL: API_URL,
@@ -11,12 +21,18 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
+  if (authToken) {
+    config.headers.Authorization = `Bearer ${authToken}`;
+  }
   return config;
 });
 
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (error.response?.status === 401) {
+      clearAuthToken();
+    }
     return Promise.reject(error);
   }
 );
@@ -153,6 +169,26 @@ export async function createUser(payload) {
 
 export async function loginUser(email, senha) {
   const response = await api.post('/user/login', { email, senha });
+  return response.data;
+}
+
+export async function fetchHydration(usuarioId) {
+  const response = await api.get(`/user/hydration?usuarioId=${usuarioId}`);
+  return response.data;
+}
+
+export async function addHydration(usuarioId, quantidadeMl) {
+  const response = await api.post('/user/hydration', { usuarioId, quantidadeMl });
+  return response.data;
+}
+
+export async function fetchWeightHistory(usuarioId) {
+  const response = await api.get(`/user/weight?usuarioId=${usuarioId}`);
+  return response.data;
+}
+
+export async function addWeight(usuarioId, peso) {
+  const response = await api.post('/user/weight', { usuarioId, peso });
   return response.data;
 }
 

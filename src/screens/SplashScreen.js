@@ -1,9 +1,16 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, Animated, StyleSheet } from 'react-native';
 import { colors } from '../theme/colors';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function SplashScreen({ navigation }) {
+  const { isAuthenticated } = useAuth();
   const opacity = useRef(new Animated.Value(0)).current;
+  const authRef = useRef(isAuthenticated);
+
+  useEffect(() => {
+    authRef.current = isAuthenticated;
+  }, [isAuthenticated]);
 
   useEffect(() => {
     Animated.sequence([
@@ -19,7 +26,7 @@ export default function SplashScreen({ navigation }) {
         useNativeDriver: true,
       }),
     ]).start(() => {
-      navigation.replace('Welcome');
+      navigation.replace(authRef.current ? 'Main' : 'Welcome');
     });
   }, []);
 
