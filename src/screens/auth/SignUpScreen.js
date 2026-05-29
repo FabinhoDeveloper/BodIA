@@ -5,14 +5,18 @@ import ScreenHeader from '../../components/ScreenHeader';
 import TextInputField from '../../components/TextInputField';
 import PrimaryButton from '../../components/PrimaryButton';
 import { colors } from '../../theme/colors';
-import { buildUserPayload, createUser } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function SignUpScreen({ route, navigation }) {
   const onboardingData = route.params?.onboardingData || {};
+  const { signUp } = useAuth();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -27,6 +31,8 @@ export default function SignUpScreen({ route, navigation }) {
     if (!name.trim()) e.name = 'Informe seu nome';
     if (!email.includes('@') || !email.includes('.')) e.email = 'E-mail inválido';
     if (password.length < 8) e.password = 'Senha deve ter no mínimo 8 caracteres';
+    if (!confirmPassword) e.confirmPassword = 'Confirme sua senha';
+    else if (confirmPassword !== password) e.confirmPassword = 'As senhas não conferem';
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -36,17 +42,14 @@ export default function SignUpScreen({ route, navigation }) {
 
     setLoading(true);
     try {
-      const payload = buildUserPayload(onboardingData, email.trim(), password);
-      payload.nome = name.trim();
+      console.log('[BodIA] Enviando para /user:', JSON.stringify(onboardingData, null, 2));
 
-      console.log('[BodIA] Enviando para /user:', JSON.stringify(payload, null, 2));
+      const serverData = await signUp(onboardingData, email.trim(), password, name.trim());
 
-      const response = await createUser(payload);
-
-      console.log('[BodIA] Resposta do servidor:', JSON.stringify(response, null, 2));
+      console.log('[BodIA] Cadastro concluído com token');
 
       navigation.navigate('PlanLoading', {
-        serverData: response.data,
+        serverData,
       });
     } catch (error) {
       console.log('[BodIA] Erro:', error.message);
@@ -110,6 +113,29 @@ export default function SignUpScreen({ route, navigation }) {
               secureTextEntry
               autoCapitalize="none"
               error={errors.password}
+              rightIcon={
+                <Text style={[styles.eyeIcon, showPassword && styles.eyeIconActive]}>
+                  👁
+                </Text>
+              }
+              onRightIconPress={() => setShowPassword(!showPassword)}
+              rightIconVisible={showPassword}
+            />
+            <TextInputField
+              label="Confirmar senha"
+              placeholder="Repita a senha"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry
+              autoCapitalize="none"
+              error={errors.confirmPassword}
+              rightIcon={
+                <Text style={[styles.eyeIcon, showConfirmPassword && styles.eyeIconActive]}>
+                  👁
+                </Text>
+              }
+              onRightIconPress={() => setShowConfirmPassword(!showConfirmPassword)}
+              rightIconVisible={showConfirmPassword}
             />
             <PrimaryButton
               title={loading ? 'Criando conta...' : 'Criar conta'}
@@ -141,4 +167,11 @@ const styles = StyleSheet.create({
   loginLink: { alignItems: 'center', marginTop: 20 },
   loginText: { fontSize: 14, color: colors.neutral.muted },
   loginHighlight: { color: colors.primary[500], fontWeight: '600' },
+  eyeIcon: {
+    fontSize: 20,
+    color: colors.neutral.muted,
+  },
+  eyeIconActive: {
+    color: colors.primary[500],
+  },
 });

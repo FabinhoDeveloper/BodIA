@@ -1,12 +1,15 @@
-import React from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { useOnboarding } from '../../contexts/OnboardingContext';
+import { useAuth } from '../../contexts/AuthContext';
 import ProfileAvatar from '../../components/main/ProfileAvatar';
 import ProfileStatsCard from '../../components/main/ProfileStatsCard';
 import MenuSection from '../../components/main/MenuSection';
 import MenuItem from '../../components/main/MenuItem';
+import { fetchWeightHistory } from '../../services/api';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
 
@@ -72,10 +75,49 @@ function calculateAge(birthDate) {
 
 export default function ProfileScreen() {
   const { onboardingData } = useOnboarding();
-  const name = onboardingData.name || 'Fábio';
-  const weight = onboardingData.weight || '75';
+  const { user, signOut } = useAuth();
+  const navigation = useNavigation();
+
+  const [latestWeight, setLatestWeight] = useState(null);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    fetchWeightHistory(user.id)
+      .then((response) => {
+        if (response.data?.atual != null) {
+          setLatestWeight(response.data.atual);
+        }
+      })
+      .catch((error) => {
+        console.log('[BodIA] Erro ao carregar peso:', error.message);
+      });
+  }, [user?.id]);
+
+  const name = user?.nome || onboardingData.name || 'Fábio';
+  const email = user?.email || 'bodiatcc@gmail.com';
+  const weight = latestWeight ?? onboardingData.weight ?? '75';
   const height = onboardingData.height || '175';
   const age = calculateAge(onboardingData.birthDate) || 25;
+
+  async function handleLogout() {
+    await signOut();
+    navigation.getParent()?.reset({ index: 0, routes: [{ name: 'Welcome' }] });
+  }
+
+  function handleDeleteAccount() {
+    Alert.alert(
+      'Excluir conta',
+      'Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Excluir', style: 'destructive', onPress: () => console.log('delete account') },
+      ]
+    );
+  }
+
+  function handleWeightMeasures() {
+    navigation.navigate('Home');
+  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -83,22 +125,22 @@ export default function ProfileScreen() {
         <View style={styles.avatarSection}>
           <ProfileAvatar name={name} size={72} />
           <Text style={styles.name}>{name}</Text>
-          <Text style={styles.email}>bodiatcc@gmail.com</Text>
+          <Text style={styles.email}>{email}</Text>
         </View>
         <View style={styles.content}>
           <ProfileStatsCard weight={weight} height={height} age={age} />
           <View style={styles.spacer} />
           <MenuSection title="Meus dados">
             <MenuItem icon={<UserIcon />} label="Editar perfil" onPress={() => console.log('edit profile')} />
-            <MenuItem icon={<ActivityIcon />} label="Peso e medidas" onPress={() => console.log('weight measures')} isLast />
+            <MenuItem icon={<ActivityIcon />} label="Peso e medidas" onPress={handleWeightMeasures} isLast />
           </MenuSection>
           <MenuSection title="Configurações">
             <MenuItem icon={<BellIcon />} label="Notificações" onPress={() => console.log('notifications')} />
             <MenuItem icon={<ShieldIcon />} label="Privacidade" onPress={() => console.log('privacy')} isLast />
           </MenuSection>
           <MenuSection>
-            <MenuItem icon={<LogoutIcon />} label="Sair" onPress={() => console.log('logout')} variant="danger" />
-            <MenuItem icon={<TrashIcon />} label="Excluir conta" onPress={() => console.log('delete account')} variant="danger" isLast />
+            <MenuItem icon={<LogoutIcon />} label="Sair" onPress={handleLogout} variant="danger" />
+            <MenuItem icon={<TrashIcon />} label="Excluir conta" onPress={handleDeleteAccount} variant="danger" isLast />
           </MenuSection>
         </View>
       </ScrollView>

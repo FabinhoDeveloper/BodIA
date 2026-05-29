@@ -1,17 +1,40 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ScreenHeader from '../../components/ScreenHeader';
 import TextInputField from '../../components/TextInputField';
 import PrimaryButton from '../../components/PrimaryButton';
 import { colors } from '../../theme/colors';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function LoginScreen({ navigation }) {
+  const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  function handleLogin() {
-    navigation.getParent()?.reset({ index: 0, routes: [{ name: 'Main' }] });
+  async function handleLogin() {
+    if (!email.trim() || !password) {
+      Alert.alert('Atenção', 'Preencha e-mail e senha');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await signIn(email.trim(), password);
+      navigation.getParent()?.reset({ index: 0, routes: [{ name: 'Main' }] });
+    } catch (error) {
+      const message =
+        error.response?.data?.error ||
+        (error.code === 'ERR_NETWORK' || error.message?.includes('Network')
+          ? 'Sem conexão com o servidor. Verifique sua internet.'
+          : 'Erro ao entrar. Verifique suas credenciais.');
+
+      Alert.alert('Erro', message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -39,8 +62,19 @@ export default function LoginScreen({ navigation }) {
               onChangeText={setPassword}
               secureTextEntry
               autoCapitalize="none"
+              rightIcon={
+                <Text style={[styles.eyeIcon, showPassword && styles.eyeIconActive]}>
+                  👁
+                </Text>
+              }
+              onRightIconPress={() => setShowPassword(!showPassword)}
+              rightIconVisible={showPassword}
             />
-            <PrimaryButton title="Entrar" onPress={handleLogin} />
+            <PrimaryButton
+              title={loading ? 'Entrando...' : 'Entrar'}
+              onPress={handleLogin}
+              disabled={loading}
+            />
             <TouchableOpacity
               style={styles.forgotLink}
               onPress={() => navigation.navigate('ForgotPassword')}
@@ -72,4 +106,11 @@ const styles = StyleSheet.create({
   linkText: { fontSize: 14, color: colors.primary[500], fontWeight: '500' },
   signupText: { fontSize: 14, color: colors.neutral.muted },
   linkHighlight: { color: colors.primary[500], fontWeight: '600' },
+  eyeIcon: {
+    fontSize: 20,
+    color: colors.neutral.muted,
+  },
+  eyeIconActive: {
+    color: colors.primary[500],
+  },
 });
