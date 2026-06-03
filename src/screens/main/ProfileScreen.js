@@ -1,107 +1,55 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import Svg, { Path, Circle } from 'react-native-svg';
-import { useOnboarding } from '../../contexts/OnboardingContext';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useAuth } from '../../contexts/AuthContext';
 import ProfileAvatar from '../../components/main/ProfileAvatar';
 import ProfileStatsCard from '../../components/main/ProfileStatsCard';
 import MenuSection from '../../components/main/MenuSection';
 import MenuItem from '../../components/main/MenuItem';
-import { fetchWeightHistory } from '../../services/api';
+import { fetchUserProfile, deleteUser } from '../../services/api';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
 
-function UserIcon() {
-  return (
-    <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
-      <Circle cx="12" cy="8" r="4" stroke={colors.neutral.secondary} strokeWidth={2} />
-      <Path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2" stroke={colors.neutral.secondary} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-  );
-}
-
-function ActivityIcon() {
-  return (
-    <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
-      <Path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke={colors.neutral.secondary} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-  );
-}
-
-function BellIcon() {
-  return (
-    <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
-      <Path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" stroke={colors.neutral.secondary} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-  );
-}
-
-function ShieldIcon() {
-  return (
-    <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
-      <Path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke={colors.neutral.secondary} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-  );
-}
-
-function LogoutIcon() {
-  return (
-    <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
-      <Path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke={colors.error.dark} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
-      <Path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke={colors.error.dark} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-  );
-}
-
-function calculateAge(birthDate) {
-  if (!birthDate) return null;
-  const birth = birthDate instanceof Date ? birthDate : new Date(birthDate);
-  if (isNaN(birth.getTime())) return null;
-  const today = new Date();
-  let age = today.getFullYear() - birth.getFullYear();
-  const m = today.getMonth() - birth.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-  return age;
-}
-
 export default function ProfileScreen() {
-  const { onboardingData } = useOnboarding();
   const { user, signOut } = useAuth();
   const navigation = useNavigation();
 
-  const [latestWeight, setLatestWeight] = useState(null);
+  const [profile, setProfile] = useState(null);
 
-  useEffect(() => {
-    if (!user?.id) return;
-    fetchWeightHistory(user.id)
-      .then((response) => {
-        if (response.data?.atual != null) {
-          setLatestWeight(response.data.atual);
-        }
-      })
-      .catch((error) => {
-        console.log('[BodIA] Erro ao carregar peso:', error.message);
-      });
-  }, [user?.id]);
+  // Recarrega o perfil sempre que a tela ganha foco (ex.: ao voltar das edições)
+  useFocusEffect(
+    useCallback(() => {
+      if (!user?.id) return;
+      let active = true;
+      fetchUserProfile(user.id)
+        .then((response) => {
+          if (active && response.data) setProfile(response.data);
+        })
+        .catch((error) => {
+          console.log('[BodIA] Erro ao carregar perfil:', error.message);
+        });
+      return () => {
+        active = false;
+      };
+    }, [user?.id])
+  );
 
-  const name = user?.nome || onboardingData.name || 'Fábio';
-  const email = user?.email || 'bodiatcc@gmail.com';
-  const weight = latestWeight ?? onboardingData.weight ?? '75';
-  const height = onboardingData.height || '175';
-  const age = calculateAge(onboardingData.birthDate) || 25;
+  const name = profile?.nome || user?.nome || '';
+  const email = profile?.email || user?.email || '';
+  const weight = profile?.pesoAtual ?? '--';
+  const height = profile?.altura ?? '--';
+  const age = profile?.idade ?? '--';
+
+  function resetToWelcome() {
+    const root = navigation.getParent('Root') || navigation.getParent()?.getParent();
+    root?.reset({ index: 0, routes: [{ name: 'Welcome' }] });
+  }
 
   async function handleLogout() {
     await signOut();
-    navigation.getParent()?.reset({ index: 0, routes: [{ name: 'Welcome' }] });
+    resetToWelcome();
   }
 
   function handleDeleteAccount() {
@@ -110,13 +58,23 @@ export default function ProfileScreen() {
       'Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.',
       [
         { text: 'Cancelar', style: 'cancel' },
-        { text: 'Excluir', style: 'destructive', onPress: () => console.log('delete account') },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              if (user?.id) await deleteUser(user.id);
+              await signOut();
+              resetToWelcome();
+            } catch (error) {
+              const message =
+                error.response?.data?.error || 'Não foi possível excluir a conta.';
+              Alert.alert('Erro', message);
+            }
+          },
+        },
       ]
     );
-  }
-
-  function handleWeightMeasures() {
-    navigation.navigate('Home');
   }
 
   return (
@@ -131,16 +89,16 @@ export default function ProfileScreen() {
           <ProfileStatsCard weight={weight} height={height} age={age} />
           <View style={styles.spacer} />
           <MenuSection title="Meus dados">
-            <MenuItem icon={<UserIcon />} label="Editar perfil" onPress={() => console.log('edit profile')} />
-            <MenuItem icon={<ActivityIcon />} label="Peso e medidas" onPress={handleWeightMeasures} isLast />
+            <MenuItem icon={<Ionicons name="person-outline" size={16} color={colors.neutral.secondary} />} label="Editar perfil" onPress={() => navigation.navigate('EditProfile')} />
+            <MenuItem icon={<Ionicons name="barbell-outline" size={16} color={colors.neutral.secondary} />} label="Peso e medidas" onPress={() => navigation.navigate('WeightMeasures')} isLast />
           </MenuSection>
           <MenuSection title="Configurações">
-            <MenuItem icon={<BellIcon />} label="Notificações" onPress={() => console.log('notifications')} />
-            <MenuItem icon={<ShieldIcon />} label="Privacidade" onPress={() => console.log('privacy')} isLast />
+            <MenuItem icon={<Ionicons name="notifications-outline" size={16} color={colors.neutral.secondary} />} label="Notificações" onPress={() => console.log('notifications')} />
+            <MenuItem icon={<Ionicons name="shield-checkmark-outline" size={16} color={colors.neutral.secondary} />} label="Privacidade" onPress={() => console.log('privacy')} isLast />
           </MenuSection>
           <MenuSection>
-            <MenuItem icon={<LogoutIcon />} label="Sair" onPress={handleLogout} variant="danger" />
-            <MenuItem icon={<TrashIcon />} label="Excluir conta" onPress={handleDeleteAccount} variant="danger" isLast />
+            <MenuItem icon={<Ionicons name="log-out-outline" size={16} color={colors.error.dark} />} label="Sair" onPress={handleLogout} variant="danger" />
+            <MenuItem icon={<Ionicons name="trash-outline" size={16} color={colors.error.dark} />} label="Excluir conta" onPress={handleDeleteAccount} variant="danger" isLast />
           </MenuSection>
         </View>
       </ScrollView>

@@ -92,6 +92,19 @@ export function AuthProvider({ children }) {
     await clearPersistedAuth();
   }, []);
 
+  // Mescla campos atualizados (ex.: nome, email) no usuário em estado e re-persiste
+  const updateUser = useCallback(async (partial) => {
+    let merged = null;
+    setUser((current) => {
+      merged = { ...(current || {}), ...partial };
+      return merged;
+    });
+    if (merged && token) {
+      await persistAuth(token, merged);
+    }
+    return merged;
+  }, [token]);
+
   return (
     <AuthContext.Provider
       value={{
@@ -102,6 +115,7 @@ export function AuthProvider({ children }) {
         signIn,
         signUp,
         signOut,
+        updateUser,
       }}
     >
       {children}
