@@ -3,8 +3,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import HomeScreen from '../screens/main/HomeScreen';
 import DietScreen from '../screens/main/DietScreen';
-import TrainingScreen from '../screens/main/TrainingScreen';
-import ProfileScreen from '../screens/main/ProfileScreen';
+import TrainingStackNavigator from './TrainingStackNavigator';
+import ProfileStackNavigator from './ProfileStackNavigator';
 import { colors } from '../theme/colors';
 
 const Tab = createBottomTabNavigator();
@@ -67,7 +67,7 @@ export default function MainTabNavigator() {
       />
       <Tab.Screen
         name="Treino"
-        component={TrainingScreen}
+        component={TrainingStackNavigator}
         options={{
           tabBarLabel: 'Treino',
           tabBarIcon: ({ color }) => (
@@ -81,7 +81,7 @@ export default function MainTabNavigator() {
       />
       <Tab.Screen
         name="Perfil"
-        component={ProfileScreen}
+        component={ProfileStackNavigator}
         options={{
           tabBarLabel: 'Perfil',
           tabBarIcon: ({ color, focused }) => (
