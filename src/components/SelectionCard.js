@@ -1,8 +1,9 @@
 import React from 'react';
 import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { colors } from '../theme/colors';
 
-export default function SelectionCard({ icon, title, subtitle, selected, onPress }) {
+export default function SelectionCard({ iconName, title, subtitle, selected, onPress }) {
   return (
     <TouchableOpacity
       style={[styles.card, selected && styles.cardSelected]}
@@ -10,7 +11,11 @@ export default function SelectionCard({ icon, title, subtitle, selected, onPress
       activeOpacity={0.8}
     >
       <View style={[styles.iconBox, selected && styles.iconBoxSelected]}>
-        <Text style={[styles.iconText, selected && styles.iconTextSelected]}>{icon}</Text>
+        <MaterialCommunityIcons
+          name={iconName}
+          size={20}
+          color={selected ? colors.neutral.white : colors.neutral.secondary}
+        />
       </View>
       <View style={styles.content}>
         <Text style={[styles.title, selected && styles.titleSelected]}>{title}</Text>
@@ -48,13 +53,6 @@ const styles = StyleSheet.create({
   },
   iconBoxSelected: {
     backgroundColor: colors.primary[500],
-  },
-  iconText: {
-    fontSize: 18,
-    color: colors.neutral.secondary,
-  },
-  iconTextSelected: {
-    color: colors.neutral.white,
   },
   content: {
     flex: 1,

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, TextInput, Animated, StyleSheet } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../../theme/colors';
 
 function formatLiters(ml) {
@@ -7,9 +8,9 @@ function formatLiters(ml) {
 }
 
 function getMotivationalMessage(consumed, target) {
-  if (consumed >= target) return 'Parabéns! Meta diária batida! 🎉';
-  if (consumed >= target * 0.7) return 'Quase lá, continue assim! 💪';
-  return 'Muito bem! Vamos lá! 💧';
+  if (consumed >= target) return 'Parabéns! Meta diária batida!';
+  if (consumed >= target * 0.7) return 'Quase lá, continue assim!';
+  return 'Muito bem! Vamos lá!';
 }
 
 export default function HydrationCard({ consumed, target, onAdd }) {
@@ -91,10 +92,10 @@ export default function HydrationCard({ consumed, target, onAdd }) {
             autoFocus
           />
           <TouchableOpacity style={styles.confirmBtn} onPress={handleCustomAdd} activeOpacity={0.7}>
-            <Text style={styles.confirmBtnText}>✓</Text>
+            <Ionicons name="checkmark" size={18} color={colors.neutral.white} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.cancelBtn} onPress={handleCancel} activeOpacity={0.7}>
-            <Text style={styles.cancelBtnText}>✕</Text>
+            <Ionicons name="close" size={18} color={colors.neutral.muted} />
           </TouchableOpacity>
         </View>
       ) : null}
@@ -167,7 +168,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  confirmBtnText: { fontSize: 16, color: colors.neutral.white, fontWeight: '600' },
   cancelBtn: {
     backgroundColor: colors.neutral.surface,
     borderRadius: 8,
@@ -176,7 +176,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cancelBtnText: { fontSize: 14, color: colors.neutral.muted, fontWeight: '600' },
   barBg: {
     height: 6,
     borderRadius: 3,

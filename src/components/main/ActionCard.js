@@ -1,21 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../../theme/colors';
-
-function ChevronRight() {
-  return (
-    <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M9 18l6-6-6-6"
-        stroke={colors.primary[900]}
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
-  );
-}
 
 export default function ActionCard({ label, title, icon, onPress }) {
   return (
@@ -25,7 +11,7 @@ export default function ActionCard({ label, title, icon, onPress }) {
         <Text style={styles.label}>{label}</Text>
         <Text style={styles.title}>{title}</Text>
       </View>
-      <ChevronRight />
+      <Ionicons name="chevron-forward" size={16} color={colors.primary[900]} />
     </TouchableOpacity>
   );
 }

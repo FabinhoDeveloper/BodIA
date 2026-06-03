@@ -1,21 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../../theme/colors';
-
-function ChevronRight() {
-  return (
-    <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M9 18l6-6-6-6"
-        stroke={colors.neutral.muted}
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
-  );
-}
 
 export default function MenuItem({ icon, label, onPress, isLast, variant = 'default' }) {
   const isDanger = variant === 'danger';
@@ -29,7 +15,7 @@ export default function MenuItem({ icon, label, onPress, isLast, variant = 'defa
         {icon}
         <Text style={[styles.label, isDanger && styles.labelDanger]}>{label}</Text>
       </View>
-      {!isDanger && <ChevronRight />}
+      {!isDanger && <Ionicons name="chevron-forward" size={16} color={colors.neutral.muted} />}
     </TouchableOpacity>
   );
 }

@@ -8,7 +8,7 @@ const MESSAGES = [
   'Calculando suas necessidades calóricas...',
   'Montando seu plano de treino...',
   'Criando seu cardápio personalizado...',
-  'Finalizando seu plano ✓',
+  'Finalizando seu plano...',
 ];
 
 export default function PlanLoadingScreen({ route, navigation }) {

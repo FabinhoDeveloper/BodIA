@@ -8,9 +8,9 @@ import NavigationFooter from '../../components/NavigationFooter';
 import { colors } from '../../theme/colors';
 
 const GOALS = [
-  { icon: '↑', title: 'Ganhar massa', subtitle: 'Foco em hipertrofia', value: 'muscle_gain' },
-  { icon: '—', title: 'Manter peso', subtitle: 'Equilíbrio e saúde', value: 'maintenance' },
-  { icon: '↓', title: 'Perder gordura', subtitle: 'Definição corporal', value: 'fat_loss' },
+  { iconName: 'trending-up', title: 'Ganhar massa', subtitle: 'Foco em hipertrofia', value: 'muscle_gain' },
+  { iconName: 'trending-neutral', title: 'Manter peso', subtitle: 'Equilíbrio e saúde', value: 'maintenance' },
+  { iconName: 'trending-down', title: 'Perder gordura', subtitle: 'Definição corporal', value: 'fat_loss' },
 ];
 
 export default function GoalScreen({ navigation }) {
@@ -31,7 +31,7 @@ export default function GoalScreen({ navigation }) {
           {GOALS.map((g) => (
             <SelectionCard
               key={g.value}
-              icon={g.icon}
+              iconName={g.iconName}
               title={g.title}
               subtitle={g.subtitle}
               selected={onboardingData.goal === g.value}

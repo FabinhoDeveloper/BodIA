@@ -8,11 +8,11 @@ import NavigationFooter from '../../components/NavigationFooter';
 import { colors } from '../../theme/colors';
 
 const LEVELS = [
-  { icon: '🪑', title: 'Sedentário', subtitle: 'Trabalho sentado, sem exercício', value: 'sedentary' },
-  { icon: '🚶', title: 'Levemente ativo', subtitle: 'Exercício leve 1-3x/semana', value: 'lightly_active' },
-  { icon: '🏃', title: 'Moderadamente ativo', subtitle: 'Exercício moderado 3-5x/semana', value: 'moderately_active' },
-  { icon: '💪', title: 'Muito ativo', subtitle: 'Exercício intenso 6-7x/semana', value: 'very_active' },
-  { icon: '🏋️', title: 'Extremamente ativo', subtitle: 'Atleta ou trabalho físico pesado', value: 'extremely_active' },
+  { iconName: 'seat-outline', title: 'Sedentário', subtitle: 'Trabalho sentado, sem exercício', value: 'sedentary' },
+  { iconName: 'walk', title: 'Levemente ativo', subtitle: 'Exercício leve 1-3x/semana', value: 'lightly_active' },
+  { iconName: 'run', title: 'Moderadamente ativo', subtitle: 'Exercício moderado 3-5x/semana', value: 'moderately_active' },
+  { iconName: 'arm-flex', title: 'Muito ativo', subtitle: 'Exercício intenso 6-7x/semana', value: 'very_active' },
+  { iconName: 'weight-lifter', title: 'Extremamente ativo', subtitle: 'Atleta ou trabalho físico pesado', value: 'extremely_active' },
 ];
 
 export default function ActivityLevelScreen({ navigation }) {
@@ -33,7 +33,7 @@ export default function ActivityLevelScreen({ navigation }) {
           {LEVELS.map((l) => (
             <SelectionCard
               key={l.value}
-              icon={l.icon}
+              iconName={l.iconName}
               title={l.title}
               subtitle={l.subtitle}
               selected={onboardingData.activityLevel === l.value}

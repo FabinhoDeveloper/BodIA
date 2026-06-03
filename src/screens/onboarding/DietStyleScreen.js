@@ -8,10 +8,10 @@ import NavigationFooter from '../../components/NavigationFooter';
 import { colors } from '../../theme/colors';
 
 const OPTIONS = [
-  { icon: '🏠', title: 'Comida caseira', subtitle: 'Arroz, feijão, carne, salada...', value: 'homemade' },
-  { icon: '⏱️', title: 'Prática e rápida', subtitle: 'Marmitas, lanches, praticidade', value: 'practical' },
-  { icon: '🎯', title: 'Dieta restritiva', subtitle: 'Frango, batata doce, ovo, brócolis...', value: 'strict' },
-  { icon: '✔️', title: 'Flexível', subtitle: 'Como de tudo, sem frescura', value: 'flexible' },
+  { iconName: 'pot-steam', title: 'Comida caseira', subtitle: 'Arroz, feijão, carne, salada...', value: 'homemade' },
+  { iconName: 'clock-fast', title: 'Prática e rápida', subtitle: 'Marmitas, lanches, praticidade', value: 'practical' },
+  { iconName: 'target', title: 'Dieta restritiva', subtitle: 'Frango, batata doce, ovo, brócolis...', value: 'strict' },
+  { iconName: 'check-all', title: 'Flexível', subtitle: 'Como de tudo, sem frescura', value: 'flexible' },
 ];
 
 export default function DietStyleScreen({ navigation }) {
@@ -28,7 +28,7 @@ export default function DietStyleScreen({ navigation }) {
           {OPTIONS.map((opt) => (
             <SelectionCard
               key={opt.value}
-              icon={opt.icon}
+              iconName={opt.iconName}
               title={opt.title}
               subtitle={opt.subtitle}
               selected={onboardingData.dietStyle === opt.value}

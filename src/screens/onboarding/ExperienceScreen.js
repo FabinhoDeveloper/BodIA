@@ -8,9 +8,9 @@ import NavigationFooter from '../../components/NavigationFooter';
 import { colors } from '../../theme/colors';
 
 const LEVELS = [
-  { icon: '🌱', title: 'Iniciante', subtitle: 'Menos de 6 meses treinando', value: 'beginner' },
-  { icon: '⚡', title: 'Intermediário', subtitle: '6 meses a 2 anos treinando', value: 'intermediate' },
-  { icon: '🏆', title: 'Avançado', subtitle: 'Mais de 2 anos treinando', value: 'advanced' },
+  { iconName: 'sprout', title: 'Iniciante', subtitle: 'Menos de 6 meses treinando', value: 'beginner' },
+  { iconName: 'lightning-bolt', title: 'Intermediário', subtitle: '6 meses a 2 anos treinando', value: 'intermediate' },
+  { iconName: 'trophy', title: 'Avançado', subtitle: 'Mais de 2 anos treinando', value: 'advanced' },
 ];
 
 export default function ExperienceScreen({ navigation }) {
@@ -27,7 +27,7 @@ export default function ExperienceScreen({ navigation }) {
           {LEVELS.map((l) => (
             <SelectionCard
               key={l.value}
-              icon={l.icon}
+              iconName={l.iconName}
               title={l.title}
               subtitle={l.subtitle}
               selected={onboardingData.experienceLevel === l.value}

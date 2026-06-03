@@ -1,8 +1,10 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../../theme/colors';
 
-export default function MealCard({ mealType, icon, calories, time, foods, state, onPress, onRegister }) {
+export default function MealCard({ mealType, iconName, calories, time, foods, state, onPress, onRegister }) {
   const isActive = state === 'active';
   const isCompleted = state === 'completed';
   const subtitleText = time ? `${calories} kcal · ${time}` : `${calories} kcal`;
@@ -16,7 +18,11 @@ export default function MealCard({ mealType, icon, calories, time, foods, state,
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <View style={[styles.iconContainer, isActive && styles.iconContainerActive]}>
-            <Text style={styles.iconText}>{icon}</Text>
+            <MaterialCommunityIcons
+              name={iconName}
+              size={16}
+              color={isActive ? colors.neutral.white : colors.neutral.secondary}
+            />
           </View>
           <View>
             <Text style={styles.mealType}>{mealType}</Text>
@@ -25,7 +31,8 @@ export default function MealCard({ mealType, icon, calories, time, foods, state,
         </View>
         {isCompleted && (
           <View style={styles.doneBadge}>
-            <Text style={styles.doneBadgeText}>✓ Feito</Text>
+            <Ionicons name="checkmark" size={12} color={colors.primary[700]} />
+            <Text style={styles.doneBadgeText}>Feito</Text>
           </View>
         )}
         {isActive && (
@@ -79,10 +86,12 @@ const styles = StyleSheet.create({
   iconContainerActive: {
     backgroundColor: colors.primary[500],
   },
-  iconText: { fontSize: 16 },
   mealType: { fontSize: 14, fontWeight: '600', color: colors.neutral.primary },
   subtitle: { fontSize: 11, color: colors.neutral.muted, marginTop: 1 },
   doneBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
     backgroundColor: colors.primary[50],
     borderRadius: 6,
     paddingVertical: 4,
