@@ -1,11 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import ScreenHeader from '../../components/ScreenHeader';
 import TextInputField from '../../components/TextInputField';
 import PrimaryButton from '../../components/PrimaryButton';
 import { colors } from '../../theme/colors';
 import { useAuth } from '../../contexts/AuthContext';
+
+// Política de senha forte: 8+ caracteres, com maiúscula, minúscula e caractere especial.
+// Retorna a mensagem do primeiro requisito não atendido, ou null se a senha for válida.
+function getPasswordError(senha) {
+  if (senha.length < 8) return 'Senha deve ter no mínimo 8 caracteres';
+  if (!/[A-Z]/.test(senha)) return 'Inclua ao menos uma letra maiúscula';
+  if (!/[a-z]/.test(senha)) return 'Inclua ao menos uma letra minúscula';
+  if (!/[^A-Za-z0-9]/.test(senha)) return 'Inclua ao menos um caractere especial';
+  return null;
+}
 
 export default function SignUpScreen({ route, navigation }) {
   const onboardingData = route.params?.onboardingData || {};
@@ -30,7 +41,8 @@ export default function SignUpScreen({ route, navigation }) {
     const e = {};
     if (!name.trim()) e.name = 'Informe seu nome';
     if (!email.includes('@') || !email.includes('.')) e.email = 'E-mail inválido';
-    if (password.length < 8) e.password = 'Senha deve ter no mínimo 8 caracteres';
+    const passwordError = getPasswordError(password);
+    if (passwordError) e.password = passwordError;
     if (!confirmPassword) e.confirmPassword = 'Confirme sua senha';
     else if (confirmPassword !== password) e.confirmPassword = 'As senhas não conferem';
     setErrors(e);
@@ -114,13 +126,20 @@ export default function SignUpScreen({ route, navigation }) {
               autoCapitalize="none"
               error={errors.password}
               rightIcon={
-                <Text style={[styles.eyeIcon, showPassword && styles.eyeIconActive]}>
-                  👁
-                </Text>
+                <Ionicons
+                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                  size={20}
+                  color={showPassword ? colors.primary[500] : colors.neutral.muted}
+                />
               }
               onRightIconPress={() => setShowPassword(!showPassword)}
               rightIconVisible={showPassword}
             />
+            {!errors.password ? (
+              <Text style={styles.passwordHint}>
+                Use 8+ caracteres, com letra maiúscula, minúscula e um caractere especial.
+              </Text>
+            ) : null}
             <TextInputField
               label="Confirmar senha"
               placeholder="Repita a senha"
@@ -130,9 +149,11 @@ export default function SignUpScreen({ route, navigation }) {
               autoCapitalize="none"
               error={errors.confirmPassword}
               rightIcon={
-                <Text style={[styles.eyeIcon, showConfirmPassword && styles.eyeIconActive]}>
-                  👁
-                </Text>
+                <Ionicons
+                  name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
+                  size={20}
+                  color={showConfirmPassword ? colors.primary[500] : colors.neutral.muted}
+                />
               }
               onRightIconPress={() => setShowConfirmPassword(!showConfirmPassword)}
               rightIconVisible={showConfirmPassword}
@@ -167,11 +188,5 @@ const styles = StyleSheet.create({
   loginLink: { alignItems: 'center', marginTop: 20 },
   loginText: { fontSize: 14, color: colors.neutral.muted },
   loginHighlight: { color: colors.primary[500], fontWeight: '600' },
-  eyeIcon: {
-    fontSize: 20,
-    color: colors.neutral.muted,
-  },
-  eyeIconActive: {
-    color: colors.primary[500],
-  },
+  passwordHint: { fontSize: 12, color: colors.neutral.muted, marginTop: -8, marginBottom: 12 },
 });

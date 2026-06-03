@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import ScreenHeader from '../../components/ScreenHeader';
 import TextInputField from '../../components/TextInputField';
 import PrimaryButton from '../../components/PrimaryButton';
@@ -63,9 +64,11 @@ export default function LoginScreen({ navigation }) {
               secureTextEntry
               autoCapitalize="none"
               rightIcon={
-                <Text style={[styles.eyeIcon, showPassword && styles.eyeIconActive]}>
-                  👁
-                </Text>
+                <Ionicons
+                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                  size={20}
+                  color={showPassword ? colors.primary[500] : colors.neutral.muted}
+                />
               }
               onRightIconPress={() => setShowPassword(!showPassword)}
               rightIconVisible={showPassword}
@@ -83,7 +86,7 @@ export default function LoginScreen({ navigation }) {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.signupLink}
-              onPress={() => navigation.navigate('SignUp')}
+              onPress={() => navigation.getParent()?.navigate('Onboarding', { screen: 'Name' })}
             >
               <Text style={styles.signupText}>
                 Não tem conta? <Text style={styles.linkHighlight}>Criar conta</Text>
@@ -106,11 +109,4 @@ const styles = StyleSheet.create({
   linkText: { fontSize: 14, color: colors.primary[500], fontWeight: '500' },
   signupText: { fontSize: 14, color: colors.neutral.muted },
   linkHighlight: { color: colors.primary[500], fontWeight: '600' },
-  eyeIcon: {
-    fontSize: 20,
-    color: colors.neutral.muted,
-  },
-  eyeIconActive: {
-    color: colors.primary[500],
-  },
 });
