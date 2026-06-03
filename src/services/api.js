@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://192.168.0.190:8080';
+const API_URL = 'http://192.168.2.122:8080';
 
 let authToken = null;
 
@@ -241,6 +241,23 @@ export async function fetchTrainingHistory(usuarioId) {
 
 export async function fetchSessionDetail(usuarioId, sessaoId) {
   const response = await api.get(`/user/training/history/detail?usuarioId=${usuarioId}&sessaoId=${sessaoId}`);
+  return response.data;
+}
+
+// --- Dieta ---
+
+export async function fetchDietToday(usuarioId) {
+  const response = await api.get(`/user/diet?usuarioId=${usuarioId}`);
+  return response.data;
+}
+
+export async function registerMeal(usuarioId, refeicaoId) {
+  const response = await api.post('/user/diet/registro', { usuarioId, refeicaoId });
+  return response.data;
+}
+
+export async function unregisterMeal(usuarioId, refeicaoId) {
+  const response = await api.delete('/user/diet/registro', { data: { usuarioId, refeicaoId } });
   return response.data;
 }
 
