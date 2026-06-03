@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, StyleSheet, Modal, TextInput, TouchableOpacity, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, { Path } from 'react-native-svg';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useAuth } from '../../contexts/AuthContext';
 import HomeHeader from '../../components/main/HomeHeader';
 import ActionCard from '../../components/main/ActionCard';
@@ -9,7 +9,7 @@ import CaloriesCard from '../../components/main/CaloriesCard';
 import HydrationCard from '../../components/main/HydrationCard';
 import TrainingTodayCard from '../../components/main/TrainingTodayCard';
 import MiniStatCard from '../../components/main/MiniStatCard';
-import { fetchHydration, addHydration, fetchWeightHistory, addWeight } from '../../services/api';
+import { fetchHydration, addHydration, fetchWeightHistory, addWeight, fetchTrainingToday } from '../../services/api';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
 
@@ -19,20 +19,6 @@ function getNextAction() {
   if (hour < 14) return 'Hora do almoço';
   if (hour < 18) return 'Hora do lanche';
   return 'Hora do jantar';
-}
-
-function FoodIcon() {
-  return (
-    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M12 3v18M5 8c0-3 3-5 7-5s7 2 7 5-3 5-7 5-7-2-7-5zM12 13c-5 0-7 3-7 6h14c0-3-2-6-7-6z"
-        stroke={colors.neutral.white}
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
-  );
 }
 
 function formatWeightDate(isoString) {
@@ -49,7 +35,11 @@ const MOCK_MACROS = {
   carbs: { consumed: 120, target: 300 },
   fat: { consumed: 43, target: 66 },
 };
-const MOCK_TRAINING = { title: 'Peito e Tríceps', exerciseCount: 6, estimatedMinutes: 50 };
+
+function estimarMinutos(exercicios) {
+  const seg = exercicios.reduce((acc, e) => acc + e.series * (e.tempoDescanso + 40), 0);
+  return Math.max(1, Math.round(seg / 60));
+}
 
 export default function HomeScreen({ navigation }) {
   const { user } = useAuth();
@@ -57,6 +47,7 @@ export default function HomeScreen({ navigation }) {
   const usuarioId = user?.id;
 
   const [hydration, setHydration] = useState({ consumed: 0, target: 2600 });
+  const [training, setTraining] = useState(null);
 
   const [weight, setWeight] = useState(null);
   const [weightHistory, setWeightHistory] = useState([]);
@@ -101,10 +92,21 @@ export default function HomeScreen({ navigation }) {
     }
   }, [usuarioId]);
 
+  const loadTraining = useCallback(async () => {
+    if (!usuarioId) return;
+    try {
+      const response = await fetchTrainingToday(usuarioId);
+      setTraining(response.data);
+    } catch (error) {
+      console.log('[BodIA] Erro ao carregar treino de hoje:', error.message);
+    }
+  }, [usuarioId]);
+
   useEffect(() => {
     loadHydration();
     loadWeight();
-  }, [loadHydration, loadWeight]);
+    loadTraining();
+  }, [loadHydration, loadWeight, loadTraining]);
 
   const handleAddHydration = useCallback(async (ml) => {
     if (!usuarioId) return;
@@ -127,7 +129,7 @@ export default function HomeScreen({ navigation }) {
       setWeightHistory(data.historico || []);
       setNewWeight('');
       setWeightModalVisible(false);
-      setWeightToast('Peso registrado! Continue acompanhando 💪');
+      setWeightToast('Peso registrado! Continue acompanhando');
     } catch (error) {
       console.log('[BodIA] Erro ao salvar peso:', error.message);
     }
@@ -144,7 +146,7 @@ export default function HomeScreen({ navigation }) {
           <ActionCard
             label="Próxima ação"
             title={getNextAction()}
-            icon={<FoodIcon />}
+            icon={<MaterialCommunityIcons name="silverware-fork-knife" size={20} color={colors.neutral.white} />}
             onPress={() => navigation.navigate('Dieta')}
           />
           <CaloriesCard
@@ -160,9 +162,10 @@ export default function HomeScreen({ navigation }) {
             onAdd={handleAddHydration}
           />
           <TrainingTodayCard
-            title={MOCK_TRAINING.title}
-            exerciseCount={MOCK_TRAINING.exerciseCount}
-            estimatedMinutes={MOCK_TRAINING.estimatedMinutes}
+            isRestDay={training != null && (!training.temFicha || !training.plano)}
+            title={training?.plano?.foco || ''}
+            exerciseCount={training?.exercicios?.length || 0}
+            estimatedMinutes={training?.exercicios ? estimarMinutos(training.exercicios) : 0}
             onPress={() => navigation.navigate('Treino')}
           />
           <View>
