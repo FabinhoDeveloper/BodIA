@@ -7,7 +7,7 @@ const RADIUS = 20;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 function CircularProgress({ consumed, target }) {
-  const pct = Math.min(consumed / target, 1);
+  const pct = target > 0 ? Math.min(consumed / target, 1) : 0;
   const offset = CIRCUMFERENCE * (1 - pct);
   return (
     <Svg width={48} height={48} viewBox="0 0 48 48">
@@ -32,7 +32,7 @@ function CircularProgress({ consumed, target }) {
 }
 
 function MacroBar({ consumed, target, color, label }) {
-  const pct = Math.min(consumed / target, 1);
+  const pct = target > 0 ? Math.min(consumed / target, 1) : 0;
   return (
     <View style={styles.macroItem}>
       <View style={styles.barBg}>

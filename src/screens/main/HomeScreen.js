@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, ScrollView, StyleSheet, Modal, TextInput, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Modal, TextInput, TouchableOpacity, Animated, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useAuth } from '../../contexts/AuthContext';
 import HomeHeader from '../../components/main/HomeHeader';
@@ -9,7 +10,7 @@ import CaloriesCard from '../../components/main/CaloriesCard';
 import HydrationCard from '../../components/main/HydrationCard';
 import TrainingTodayCard from '../../components/main/TrainingTodayCard';
 import MiniStatCard from '../../components/main/MiniStatCard';
-import { fetchHydration, addHydration, fetchWeightHistory, addWeight, fetchTrainingToday } from '../../services/api';
+import { fetchHydration, addHydration, fetchWeightHistory, addWeight, fetchTrainingToday, fetchDietToday } from '../../services/api';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
 
@@ -28,13 +29,37 @@ function formatWeightDate(isoString) {
   return `${day} ${month}`;
 }
 
-// TODO: integrar com API
-const MOCK_CALORIES = { consumed: 1240, target: 2400 };
-const MOCK_MACROS = {
-  protein: { consumed: 82, target: 150 },
-  carbs: { consumed: 120, target: 300 },
-  fat: { consumed: 43, target: 66 },
+const EMPTY_CALORIES = {
+  consumed: 0,
+  target: 0,
+  protein: { consumed: 0, target: 0 },
+  carbs: { consumed: 0, target: 0 },
+  fat: { consumed: 0, target: 0 },
 };
+
+// Deriva calorias/macros consumidos (refeições registradas hoje) e metas (plano completo)
+function resumoCaloriasDoPlano(plano) {
+  const refeicoes = plano?.refeicoes ?? [];
+  const consumido = refeicoes
+    .filter((r) => r.registradoHoje)
+    .reduce(
+      (acc, r) => ({
+        calorias: acc.calorias + r.calorias,
+        proteinas: acc.proteinas + r.proteinas,
+        carboidratos: acc.carboidratos + r.carboidratos,
+        gorduras: acc.gorduras + r.gorduras,
+      }),
+      { calorias: 0, proteinas: 0, carboidratos: 0, gorduras: 0 },
+    );
+
+  return {
+    consumed: Math.round(consumido.calorias),
+    target: Math.round(plano?.totalCalorias ?? 0),
+    protein: { consumed: Math.round(consumido.proteinas), target: Math.round(plano?.totalProteinas ?? 0) },
+    carbs: { consumed: Math.round(consumido.carboidratos), target: Math.round(plano?.totalCarboidratos ?? 0) },
+    fat: { consumed: Math.round(consumido.gorduras), target: Math.round(plano?.totalGorduras ?? 0) },
+  };
+}
 
 function estimarMinutos(exercicios) {
   const seg = exercicios.reduce((acc, e) => acc + e.series * (e.tempoDescanso + 40), 0);
@@ -48,6 +73,8 @@ export default function HomeScreen({ navigation }) {
 
   const [hydration, setHydration] = useState({ consumed: 0, target: 2600 });
   const [training, setTraining] = useState(null);
+  const [calories, setCalories] = useState(EMPTY_CALORIES);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [weight, setWeight] = useState(null);
   const [weightHistory, setWeightHistory] = useState([]);
@@ -102,11 +129,34 @@ export default function HomeScreen({ navigation }) {
     }
   }, [usuarioId]);
 
-  useEffect(() => {
-    loadHydration();
-    loadWeight();
-    loadTraining();
-  }, [loadHydration, loadWeight, loadTraining]);
+  const loadDiet = useCallback(async () => {
+    if (!usuarioId) return;
+    try {
+      const response = await fetchDietToday(usuarioId);
+      setCalories(resumoCaloriasDoPlano(response.data));
+    } catch (error) {
+      console.log('[BodIA] Erro ao carregar calorias do dia:', error.message);
+    }
+  }, [usuarioId]);
+
+  const refreshAll = useCallback(
+    () => Promise.all([loadHydration(), loadWeight(), loadTraining(), loadDiet()]),
+    [loadHydration, loadWeight, loadTraining, loadDiet],
+  );
+
+  // Recarrega sempre que a Home ganha foco (ex.: ao voltar da aba Dieta após
+  // registrar/desfazer uma refeição), para refletir o consumido atualizado.
+  useFocusEffect(
+    useCallback(() => {
+      refreshAll();
+    }, [refreshAll]),
+  );
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refreshAll();
+    setRefreshing(false);
+  }, [refreshAll]);
 
   const handleAddHydration = useCallback(async (ml) => {
     if (!usuarioId) return;
@@ -140,8 +190,19 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <HomeHeader userName={userName} />
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary[500]}
+            colors={[colors.primary[500]]}
+          />
+        }
+      >
+        <HomeHeader userName={userName} onReload={onRefresh} />
         <View style={styles.content}>
           <ActionCard
             label="Próxima ação"
@@ -150,11 +211,11 @@ export default function HomeScreen({ navigation }) {
             onPress={() => navigation.navigate('Dieta')}
           />
           <CaloriesCard
-            consumed={MOCK_CALORIES.consumed}
-            target={MOCK_CALORIES.target}
-            protein={MOCK_MACROS.protein}
-            carbs={MOCK_MACROS.carbs}
-            fat={MOCK_MACROS.fat}
+            consumed={calories.consumed}
+            target={calories.target}
+            protein={calories.protein}
+            carbs={calories.carbs}
+            fat={calories.fat}
           />
           <HydrationCard
             consumed={hydration.consumed}

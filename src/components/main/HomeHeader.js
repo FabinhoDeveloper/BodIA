@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
 
@@ -19,20 +20,32 @@ function getFormattedDate() {
   return raw.charAt(0).toUpperCase() + raw.slice(1);
 }
 
-export default function HomeHeader({ userName }) {
+export default function HomeHeader({ userName, onReload }) {
   return (
     <View style={styles.container}>
-      <Text style={styles.date}>{getFormattedDate()}</Text>
-      <Text style={styles.greeting}>{getGreeting()}, {userName}</Text>
+      <View style={styles.textBlock}>
+        <Text style={styles.date}>{getFormattedDate()}</Text>
+        <Text style={styles.greeting}>{getGreeting()}, {userName}</Text>
+      </View>
+      {onReload ? (
+        <TouchableOpacity style={styles.reloadBtn} onPress={onReload} activeOpacity={0.7}>
+          <Ionicons name="refresh" size={18} color={colors.neutral.secondary} />
+        </TouchableOpacity>
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.lg,
   },
+  textBlock: { flex: 1 },
+  reloadBtn: { padding: 4 },
   date: {
     fontSize: 13,
     color: colors.neutral.muted,
