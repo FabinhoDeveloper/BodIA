@@ -172,6 +172,21 @@ export async function loginUser(email, senha) {
   return response.data;
 }
 
+export async function fetchUserProfile(usuarioId) {
+  const response = await api.get(`/user/profile?usuarioId=${usuarioId}`);
+  return response.data;
+}
+
+export async function updateUser(usuarioId, data) {
+  const response = await api.put('/user/profile', { usuarioId, ...data });
+  return response.data;
+}
+
+export async function deleteUser(usuarioId) {
+  const response = await api.delete(`/user/profile?usuarioId=${usuarioId}`);
+  return response.data;
+}
+
 export async function fetchHydration(usuarioId) {
   const response = await api.get(`/user/hydration?usuarioId=${usuarioId}`);
   return response.data;
@@ -189,6 +204,43 @@ export async function fetchWeightHistory(usuarioId) {
 
 export async function addWeight(usuarioId, peso) {
   const response = await api.post('/user/weight', { usuarioId, peso });
+  return response.data;
+}
+
+// --- Treino ---
+
+export async function fetchTrainingToday(usuarioId) {
+  const response = await api.get(`/user/training/today?usuarioId=${usuarioId}`);
+  return response.data;
+}
+
+export async function fetchFicha(usuarioId) {
+  const response = await api.get(`/user/training/ficha?usuarioId=${usuarioId}`);
+  return response.data;
+}
+
+export async function startSession(usuarioId, planoTreinamentoDiarioId) {
+  const response = await api.post('/user/training/sessions', { usuarioId, planoTreinamentoDiarioId });
+  return response.data;
+}
+
+export async function logSet(usuarioId, registroSerieId, repeticoes, carga) {
+  const response = await api.patch('/user/training/sessions/set', { usuarioId, registroSerieId, repeticoes, carga });
+  return response.data;
+}
+
+export async function finishSession(usuarioId, sessaoId) {
+  const response = await api.post('/user/training/sessions/finish', { usuarioId, sessaoId });
+  return response.data;
+}
+
+export async function fetchTrainingHistory(usuarioId) {
+  const response = await api.get(`/user/training/history?usuarioId=${usuarioId}`);
+  return response.data;
+}
+
+export async function fetchSessionDetail(usuarioId, sessaoId) {
+  const response = await api.get(`/user/training/history/detail?usuarioId=${usuarioId}&sessaoId=${sessaoId}`);
   return response.data;
 }
 
